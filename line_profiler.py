@@ -196,9 +196,10 @@ def show_func(filename, start_lineno, func_name, timings, unit, stream=None, str
         # Fake empty lines so we can see the timings, if not the code.
         nlines = max(linenos) - min(min(linenos), start_lineno) + 1
         sublines = [''] * nlines
+
     for lineno, nhits, time in timings:
-        d[lineno] = (nhits, time, '%5.1f' % (float(time) / nhits),
-            '%5.1f' % (100*time / total_time))
+        d[lineno] = (nhits, time, '%5.1f' % (float(time) / nhits if nhits else 0),
+            '%5.1f' % (100*time / total_time if total_time else 0))
     linenos = range(start_lineno, start_lineno + len(sublines))
     empty = ('', '', '', '')
     header = template % ('Line #', 'Hits', 'Time', 'Per Hit', '% Time',
@@ -208,12 +209,13 @@ def show_func(filename, start_lineno, func_name, timings, unit, stream=None, str
     stream.write("\n")
     stream.write('=' * len(header))
     stream.write("\n")
-    for lineno, line in zip(linenos, sublines):
-        nhits, time, per_hit, percent = d.get(lineno, empty)
-        txt = template % (lineno, nhits, time, per_hit, percent,
-                          line.rstrip('\n').rstrip('\r'))
-        stream.write(txt)
-        stream.write("\n")
+    if total_time > 0:
+        for lineno, line in zip(linenos, sublines):
+            nhits, time, per_hit, percent = d.get(lineno, empty)
+            txt = template % (lineno, nhits, time, per_hit, percent,
+                            line.rstrip('\n').rstrip('\r'))
+            stream.write(txt)
+            stream.write("\n")
     stream.write("\n")
 
 def show_text(stats, unit, stream=None, stripzeros=False):
@@ -223,7 +225,9 @@ def show_text(stats, unit, stream=None, stripzeros=False):
         stream = sys.stdout
 
     stream.write('Timer unit: %g s\n\n' % unit)
-    for (fn, lineno, name), timings in sorted(stats.items()):
+    data = stats.items()
+    data.sort(key=lambda x: -sum([y[2] for y in x[1]]))
+    for (fn, lineno, name), timings in data:
         show_func(fn, lineno, name, stats[fn, lineno, name], unit, stream=stream, stripzeros=stripzeros)
 
 # A %lprun magic for IPython.
