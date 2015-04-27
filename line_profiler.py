@@ -194,7 +194,7 @@ def show_func(filename, start_lineno, func_name, timings, unit, stream=None, str
         stream.write("that you ran the profiler from?\n")
         stream.write("Continuing without the function's contents.\n")
         # Fake empty lines so we can see the timings, if not the code.
-        if nlines:
+        if linenos:
             nlines = max(linenos) - min(min(linenos), start_lineno) + 1
         else:
             nlines = 1
