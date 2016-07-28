@@ -228,7 +228,7 @@ def show_text(stats, unit, stream=None, stripzeros=False):
         stream = sys.stdout
 
     stream.write('Timer unit: %g s\n\n' % unit)
-    data = stats.items()
+    data = list(stats.items())
     data.sort(key=lambda x: -sum([y[2] for y in x[1]]))
     for (fn, lineno, name), timings in data:
         show_func(fn, lineno, name, stats[fn, lineno, name], unit, stream=stream, stripzeros=stripzeros)
